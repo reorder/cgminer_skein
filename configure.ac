@@ -192,6 +192,7 @@ AC_ARG_ENABLE([adl],
 	)
 
 scrypt="no"
+keccak="no"
 
 if test "$found_opencl" = 1; then
 	if test "x$adl" != xno; then
@@ -215,11 +216,20 @@ if test "$found_opencl" = 1; then
 	if test "x$scrypt" = xyes; then
 		AC_DEFINE([USE_SCRYPT], [1], [Defined to 1 if scrypt support is wanted])
 	fi
+
+    AC_ARG_ENABLE([keccak],
+        [AC_HELP_STRING([--enable-keccak],[Compile support for keccak copperlark mining (default disabled)])],
+        [keccak=$enableval]
+        )
+    if test "x$keccak" = xyes; then
+        AC_DEFINE([USE_KECCAK], [1], [Defined to 1 if keccak support is wanted])
+    fi
 else
 	DLOPEN_FLAGS=""
 fi
 
 AM_CONDITIONAL([HAS_SCRYPT], [test x$scrypt = xyes])
+AM_CONDITIONAL([HAS_KECCAK], [test x$keccak = xyes])
 
 avalon="no"
 
@@ -481,6 +491,7 @@ AC_DEFINE_UNQUOTED([POCLBM_KERNNAME], ["poclbm130302"], [Filename for poclbm ker
 AC_DEFINE_UNQUOTED([DIAKGCN_KERNNAME], ["diakgcn121016"], [Filename for diakgcn kernel])
 AC_DEFINE_UNQUOTED([DIABLO_KERNNAME], ["diablo130302"], [Filename for diablo kernel])
 AC_DEFINE_UNQUOTED([SCRYPT_KERNNAME], ["scrypt130511"], [Filename for scrypt kernel])
+AC_DEFINE_UNQUOTED([KECCAK_KERNNAME], ["keccak130718"], [Filename for keccak kernel])
 
 
 AC_SUBST(OPENCL_LIBS)
@@ -535,12 +546,20 @@ if test "x$opencl" != xno; then
 		echo "  scrypt...............: Disabled"
 	fi
 
+
+    if test "x$keccak" != xno; then
+        echo "  keccak...............: Enabled"
+    else
+        echo "  keccak...............: Disabled"
+    fi
+
 	else
 		echo "  OpenCL...............: NOT FOUND. GPU mining support DISABLED"
 		if test "x$avalon$bitforce$bitfury$icarus$modminer$bflsc$hashfast$klondike$knc" = xnonononononononono; then
 			AC_MSG_ERROR([No mining configured in])
 		fi
 		echo "  scrypt...............: Disabled (needs OpenCL)"
+		echo "  keccak...............: Disabled (needs OpenCL)"
 	fi
 else
 	echo "  OpenCL...............: Detection overrided. GPU mining support DISABLED"
@@ -548,6 +567,7 @@ else
 		AC_MSG_ERROR([No mining configured in])
 	fi
 	echo "  scrypt...............: Disabled (needs OpenCL)"
+	echo "  keccak...............: Disabled (needs OpenCL)"
 fi
 
 if test "x$adl" != xno; then

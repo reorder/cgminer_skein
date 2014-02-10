@@ -34,6 +34,10 @@
 #include "adl.h"
 #include "util.h"
 
+#ifdef USE_KECCAK
+#include "keccak.h"
+#endif
+
 /* TODO: cleanup externals ********************/
 
 #ifdef HAVE_CURSES
@@ -234,6 +238,10 @@ static enum cl_kernels select_kernel(char *arg)
 	if (!strcmp(arg, "scrypt"))
 		return KL_SCRYPT;
 #endif
+#ifdef USE_KECCAK
+    if (!strcmp(arg, "keccak"))
+        return KL_KECCAK;
+#endif
 	return KL_NONE;
 }
 
@@ -245,6 +253,8 @@ char *set_kernel(char *arg)
 
 	if (opt_scrypt)
 		return "Cannot specify a kernel with scrypt";
+    if (opt_keccak)
+        return "Cannot specify a kernel with keccak";
 	nextptr = strtok(arg, ",");
 	if (nextptr == NULL)
 		return "Invalid parameters for set kernel";
@@ -1296,6 +1306,24 @@ static cl_int queue_scrypt_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_u
 	return status;
 }
 #endif
+#ifdef USE_KECCAK
+static cl_int queue_keccak_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_unused cl_uint threads)
+{
+        cl_kernel *kernel = &clState->kernel;
+        unsigned int num = 0;
+        cl_int status = 0;
+
+        status = clEnqueueWriteBuffer(clState->commandQueue,
+                clState->keccak_CLbuffer, true, 0,
+                KECCAK_BUFFER_SIZE, &blk->keccak_data[0],
+                0, NULL,NULL);
+
+        CL_SET_ARG(clState->keccak_CLbuffer);
+        CL_SET_ARG(clState->outputBuffer);
+
+        return status;
+}
+#endif
 
 static void set_threads_hashes(unsigned int vectors, unsigned int compute_shaders, int64_t *hashes, size_t *globalThreads,
 			       unsigned int minthreads, __maybe_unused int *intensity, __maybe_unused int *xintensity, __maybe_unused int *rawintensity)
@@ -1601,6 +1629,12 @@ static bool opencl_thread_prepare(struct thr_info *thr)
 				cgpu->kname = "scrypt";
 				break;
 #endif
+
+#ifdef USE_KECCAK
+            case KL_KECCAK:
+                cgpu->kname = "keccak";
+                break;
+#endif
 			case KL_POCLBM:
 				cgpu->kname = "poclbm";
 				break;
@@ -1648,6 +1682,11 @@ static bool opencl_thread_init(struct thr_info *thr)
 			thrdata->queue_kernel_parameters = &queue_scrypt_kernel;
 			break;
 #endif
+#ifdef USE_KECCAK
+        case KL_KECCAK:
+            thrdata->queue_kernel_parameters = &queue_keccak_kernel;
+            break;
+#endif
 		default:
 		case KL_DIABLO:
 			thrdata->queue_kernel_parameters = &queue_diablo_kernel;
@@ -1683,6 +1722,11 @@ static bool opencl_prepare_work(struct thr_info __maybe_unused *thr, struct work
 	if (opt_scrypt)
 		work->blk.work = work;
 	else
+#endif
+#ifdef USE_KECCAK
+    if (opt_keccak)
+        keccak_prepare_work(thr, work);
+    else
 #endif
 		precalc_hash(&work->blk, (uint32_t *)(work->midstate), (uint32_t *)(work->data + 64));
 	return true;
@@ -1788,10 +1832,12 @@ static void opencl_thread_shutdown(struct thr_info *thr)
 	const int thr_id = thr->id;
 	_clState *clState = clStates[thr_id];
 
-	clReleaseKernel(clState->kernel);
-	clReleaseProgram(clState->program);
-	clReleaseCommandQueue(clState->commandQueue);
-	clReleaseContext(clState->context);
+    if (clState->kernel) {
+        clReleaseKernel(clState->kernel);
+        clReleaseProgram(clState->program);
+        clReleaseCommandQueue(clState->commandQueue);
+        clReleaseContext(clState->context);
+    }
 }
 
 struct device_drv opencl_drv = {

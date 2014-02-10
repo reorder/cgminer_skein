@@ -58,6 +58,8 @@ char *curly = ":D";
 #include "driver-opencl.h"
 #include "bench_block.h"
 #include "scrypt.h"
+#include "keccak.h"
+
 #ifdef USE_USBUTILS
 #include "usbutils.h"
 #endif
@@ -122,6 +124,9 @@ int opt_g_threads = -1;
 int gpu_threads;
 #ifdef USE_SCRYPT
 bool opt_scrypt;
+#endif
+#ifdef USE_KECCAK
+bool opt_keccak;
 #endif
 #endif
 bool opt_restart = true;
@@ -1452,6 +1457,11 @@ static struct opt_table opt_config_table[] = {
 		     set_shaders, NULL, NULL,
 		     "GPU shaders per card for tuning scrypt, comma separated"),
 #endif
+#ifdef USE_KECCAK
+    OPT_WITHOUT_ARG("--keccak",
+            opt_set_bool, &opt_keccak,
+            "Use the keccak algorithm for mining (copperlark only)"),
+#endif
 	OPT_WITH_ARG("--sharelog",
 		     set_sharelog, NULL, NULL,
 		     "Append share log to file"),
@@ -1709,6 +1719,9 @@ static char *opt_verusage_and_exit(const char *extra)
 #endif
 #ifdef USE_SCRYPT
 		"scrypt "
+#endif
+#ifdef USE_KECCAK
+        "keccak "
 #endif
 		"mining support.\n"
 		, packagename);
@@ -3268,6 +3281,8 @@ static void calc_diff(struct work *work, double known)
 		d64 = truediffone;
 		if (opt_scrypt)
 			d64 *= (double)65536;
+        else if (opt_keccak)
+            d64 *= (double)256;
 		dcut64 = le256todouble(work->target);
 		if (unlikely(!dcut64))
 			dcut64 = 1;
@@ -3942,6 +3957,8 @@ static void rebuild_hash(struct work *work)
 {
 	if (opt_scrypt)
 		scrypt_regenhash(work);
+    else if (opt_keccak)
+        keccak_regenhash(work);
 	else
 		regen_hash(work);
 }
@@ -4633,6 +4650,9 @@ void write_config(FILE *fcfg)
 					case KL_SCRYPT:
 						fprintf(fcfg, "scrypt");
 						break;
+                    case KL_KECCAK:
+                        fprintf(fcfg, "keccak");
+                        break;
 				}
 			}
 		};
@@ -6178,6 +6198,8 @@ void set_target(unsigned char *dest_target, double diff)
 	d64 = truediffone;
 	if (opt_scrypt)
 		d64 *= (double)65536;
+    else if (opt_keccak)
+        d64 *= (double)256;
 	d64 /= diff;
 
 	dcut64 = d64 / bits192;
@@ -6237,7 +6259,11 @@ static void gen_stratum_work(struct pool *pool, struct work *work)
 	cg_dwlock(&pool->data_lock);
 
 	/* Generate merkle root */
-	gen_hash(pool->coinbase, merkle_root, pool->swork.cb_len);
+    if (opt_keccak) {
+        sha256(pool->coinbase, pool->swork.cb_len, merkle_root);
+    } else {
+	    gen_hash(pool->coinbase, merkle_root, pool->swork.cb_len);
+    }
 	memcpy(merkle_sha, merkle_root, 32);
 	for (i = 0; i < pool->swork.merkles; i++) {
 		memcpy(merkle_sha + 32, pool->swork.merkle_bin[i], 32);
@@ -6388,7 +6414,7 @@ bool test_nonce(struct work *work, uint32_t nonce)
 	uint32_t diff1targ;
 
 	rebuild_nonce(work, nonce);
-	diff1targ = opt_scrypt ? 0x0000ffffUL : 0;
+	diff1targ = opt_scrypt ? 0x0000ffffUL : (opt_keccak ? 0x000000ffUL : 0);
 
 	return (le32toh(*hash_32) <= diff1targ);
 }

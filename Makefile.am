@@ -57,6 +57,10 @@ if HAS_SCRYPT
 cgminer_SOURCES += scrypt.c scrypt.h
 endif
 
+if HAS_KECCAK
+cgminer_SOURCES += keccak.c keccak.h
+endif
+
 endif
 
 if NEED_FPGAUTILS

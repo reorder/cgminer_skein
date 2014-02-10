@@ -43,6 +43,10 @@ extern char *curly;
 #endif
 #endif /* HAVE_OPENCL */
 
+#ifdef USE_KECCAK
+//#include "keccak.h"
+#define KECCAK_BUFFER_SIZE (20*4)
+#endif
 #ifdef STDC_HEADERS
 # include <stdlib.h>
 # include <stddef.h>
@@ -406,6 +410,7 @@ enum cl_kernels {
 	KL_DIAKGCN,
 	KL_DIABLO,
 	KL_SCRYPT,
+    KL_KECCAK,
 };
 
 enum dev_reason {
@@ -1190,6 +1195,11 @@ extern bool opt_scrypt;
 #else
 #define opt_scrypt (0)
 #endif
+#ifdef USE_KECCAK
+extern bool opt_keccak;
+#else
+#define opt_keccak (0)
+#endif
 extern double total_secs;
 extern int mining_threads;
 extern int total_devices;
@@ -1244,6 +1254,9 @@ typedef struct {
 	cl_uint oneA, twoA, threeA, fourA, fiveA, sixA, sevenA;
 #ifdef USE_SCRYPT
 	struct work *work;
+#endif
+#ifdef USE_KECCAK
+    unsigned char keccak_data[KECCAK_BUFFER_SIZE];
 #endif
 } dev_blk_ctx;
 #else

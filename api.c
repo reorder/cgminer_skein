@@ -164,6 +164,11 @@ static const char *FALSESTR = "false";
 #ifdef USE_SCRYPT
 static const char *SCRYPTSTR = "scrypt";
 #endif
+
+#ifdef USE_KECCAK
+static const char *KECCAKSTR = "keccak";
+#endif
+
 static const char *SHA256STR = "sha256";
 
 static const char *DEVICECODE = ""
@@ -3668,6 +3673,12 @@ static void minecoin(struct io_data *io_data, __maybe_unused SOCKETTYPE c, __may
 	if (opt_scrypt)
 		root = api_add_const(root, "Hash Method", SCRYPTSTR, false);
 	else
+#endif
+
+#ifdef USE_KECCAK
+    if (opt_keccak)
+        root = api_add_const(root, "Hash Method", KECCAKSTR, false);
+     else
 #endif
 		root = api_add_const(root, "Hash Method", SHA256STR, false);
 

@@ -25,6 +25,9 @@ typedef struct {
 	size_t padbufsize;
 	void * cldata;
 #endif
+#ifdef USE_KECCAK
+    cl_mem keccak_CLbuffer; /* KECCAK_BUFFER_SIZE bytes */
+#endif
 	bool hasBitAlign;
 	bool hasOpenCL11plus;
 	bool hasOpenCL12plus;

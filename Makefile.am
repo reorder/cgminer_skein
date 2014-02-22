@@ -61,6 +61,10 @@ if HAS_KECCAK
 cgminer_SOURCES += keccak.c keccak.h
 endif
 
+if HAS_SKEIN
+cgminer_SOURCES += skein.c skein.h
+endif
+
 endif
 
 if NEED_FPGAUTILS

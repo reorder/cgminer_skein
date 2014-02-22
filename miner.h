@@ -44,7 +44,6 @@ extern char *curly;
 #endif /* HAVE_OPENCL */
 
 #ifdef USE_KECCAK
-//#include "keccak.h"
 #define KECCAK_BUFFER_SIZE (20*4)
 #endif
 #ifdef STDC_HEADERS
@@ -411,6 +410,7 @@ enum cl_kernels {
 	KL_DIABLO,
 	KL_SCRYPT,
     KL_KECCAK,
+    KL_SKEIN,
 };
 
 enum dev_reason {
@@ -1200,6 +1200,11 @@ extern bool opt_keccak;
 #else
 #define opt_keccak (0)
 #endif
+#ifdef USE_SKEIN
+extern bool opt_skein;
+#else
+#define opt_skein (0)
+#endif
 extern double total_secs;
 extern int mining_threads;
 extern int total_devices;
@@ -1257,6 +1262,10 @@ typedef struct {
 #endif
 #ifdef USE_KECCAK
     unsigned char keccak_data[KECCAK_BUFFER_SIZE];
+#endif
+#ifdef USE_SKEIN
+    cl_ulong skein_midstate[8];
+    cl_uint skein_data[3];
 #endif
 } dev_blk_ctx;
 #else

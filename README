@@ -142,7 +142,8 @@ CGMiner specific configuration options:
   --disable-adl           Override detection and disable building with adl
   --enable-scrypt         Compile support for scrypt litecoin mining (default
                           disabled)
-  --enable-keccak         Compile support for keccak copperlark mining (default disabled)
+  --enable-keccak         Compile support for keccak maxcoin mining (default disabled)
+  --enable-skein          Compile support for skeincoin mining (default disabled)
   --enable-avalon         Compile support for Avalon (default disabled)
   --enable-bflsc          Compile support for BFL ASICs (default disabled)
   --enable-bitforce       Compile support for BitForce FPGAs (default
@@ -204,6 +205,7 @@ Options for both config file and command line:
 --fix-protocol      Do not redirect to a different getwork protocol (eg. stratum)
 --hotplug <arg>     Set hotplug check time to <arg> seconds (0=never default: 5) - only with libusb
 --keccak            Use the keccak algorithm for mining (MaxCoin)
+--skein             Use the skein algorithm for mining (SkeinCoin)
 --kernel-path|-K <arg> Specify a path to where bitstream and kernel files are (default: "/usr/local/bin")
 --load-balance      Change multipool strategy from failover to quota based balance
 --log|-l <arg>      Interval in seconds between log output (default: 5)

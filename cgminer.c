@@ -59,6 +59,7 @@ char *curly = ":D";
 #include "bench_block.h"
 #include "scrypt.h"
 #include "keccak.h"
+#include "skein.h"
 
 #ifdef USE_USBUTILS
 #include "usbutils.h"
@@ -127,6 +128,9 @@ bool opt_scrypt;
 #endif
 #ifdef USE_KECCAK
 bool opt_keccak;
+#endif
+#ifdef USE_SKEIN
+bool opt_skein;
 #endif
 #endif
 bool opt_restart = true;
@@ -1460,7 +1464,12 @@ static struct opt_table opt_config_table[] = {
 #ifdef USE_KECCAK
     OPT_WITHOUT_ARG("--keccak",
             opt_set_bool, &opt_keccak,
-            "Use the keccak algorithm for mining (copperlark only)"),
+            "Use the keccak algorithm for mining (maxcoin)"),
+#endif
+#ifdef USE_SKEIN
+    OPT_WITHOUT_ARG("--skein",
+            opt_set_bool, &opt_skein,
+            "Use the skein algorithm for mining (skeincoin)"),
 #endif
 	OPT_WITH_ARG("--sharelog",
 		     set_sharelog, NULL, NULL,
@@ -1722,6 +1731,9 @@ static char *opt_verusage_and_exit(const char *extra)
 #endif
 #ifdef USE_KECCAK
         "keccak "
+#endif
+#ifdef USE_SKEIN
+        "skein "
 #endif
 		"mining support.\n"
 		, packagename);
@@ -3959,6 +3971,8 @@ static void rebuild_hash(struct work *work)
 		scrypt_regenhash(work);
     else if (opt_keccak)
         keccak_regenhash(work);
+    else if (opt_skein)
+        skein_regenhash(work);
 	else
 		regen_hash(work);
 }
@@ -4652,6 +4666,9 @@ void write_config(FILE *fcfg)
 						break;
                     case KL_KECCAK:
                         fprintf(fcfg, "keccak");
+                        break;
+                    case KL_SKEIN:
+                        fprintf(fcfg, "skein");
                         break;
 				}
 			}
@@ -6412,10 +6429,8 @@ bool test_nonce(struct work *work, uint32_t nonce)
 {
 	uint32_t *hash_32 = (uint32_t *)(work->hash + 28);
 	uint32_t diff1targ;
-
 	rebuild_nonce(work, nonce);
-	diff1targ = opt_scrypt ? 0x0000ffffUL : (opt_keccak ? 0x000000ffUL : 0);
-
+	diff1targ = opt_scrypt ? 0x0000ffffUL : ((opt_keccak || opt_skein) ? 0x000000ffUL : 0);
 	return (le32toh(*hash_32) <= diff1targ);
 }
 

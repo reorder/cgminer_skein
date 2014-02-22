@@ -486,11 +486,12 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize)
                 strcpy(binaryfilename, KECCAK_KERNNAME);
                 /* Keccak only supports vector 1 */
                 cgpu->vwidth = 1;
+                break;
             case KL_SKEIN:
                 strcpy(filename, SKEIN_KERNNAME".cl");
                 strcpy(binaryfilename, SKEIN_KERNNAME);
                 cgpu->vwidth = 1;
-          break;
+                break;
 			case KL_NONE: /* Shouldn't happen */
 			case KL_DIABLO:
 				strcpy(filename, DIABLO_KERNNAME".cl");

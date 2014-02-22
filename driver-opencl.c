@@ -248,7 +248,7 @@ static enum cl_kernels select_kernel(char *arg)
 #endif
 #ifdef USE_SKEIN
     if (!strcmp(arg, "skein"))
-        return KL_KECCAK;
+        return KL_SKEIN;
 #endif
 	return KL_NONE;
 }

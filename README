@@ -1,19 +1,13 @@
-This is a modified cgminer 3.7.2 software for Maxcoin stratum mining.
+This is a modified cgminer 3.7.3 software for Skeincoin and Maxcoin stratum mining.
 
-ATTENTION WINDOWS USERS
-*** Windows build is available for download on http://max.1gh.com page ***
-
-Usage: cgminer --keccak -o stratum+tcp://maxpool.1gh.com:17333 -u YOUR-WALLET -p x
-
-Developed for MAX.1GH.COM pool by reorder.
-MAX: mdr5rGdv5mq4zniSZDb6FdWnhUjV71C5d9
-BTC: 1QCdQmJYUqJh4NJiPgU3LQzz3atvk58oL3
+Skeincoin usage: cgminer --skein -o -o stratum+tcp://skc.coinmine.pl:6400 -u WORKER -p PASSWORD
+Maxcoin usage: cgminer --keccak -o stratum+tcp://maxpool.1gh.com:17333 -u YOUR-WALLET -p x
 
 How to build:
-sh autogen.sh --enable-keccak --enable-scrypt --enable-opencl
+sh autogen.sh --enable-skein --enable-keccak --enable-scrypt --enable-opencl
 make
 
-This version of cgminer has been forked off an excellet modification by Martin Danielsen.
+This version of cgminer has been forked off an excellent modification by Martin Danielsen.
 Original README follows.
 
 

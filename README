@@ -1,6 +1,6 @@
 This is a modified cgminer 3.7.3 software for Skeincoin and Maxcoin stratum mining.
 
-Skeincoin usage: cgminer --skein -o -o stratum+tcp://skc.coinmine.pl:6400 -u WORKER -p PASSWORD
+Skeincoin usage: cgminer --skein -o stratum+tcp://skc.coinmine.pl:6400 -u WORKER -p PASSWORD
 Maxcoin usage: cgminer --keccak -o stratum+tcp://maxpool.1gh.com:17333 -u YOUR-WALLET -p x
 
 How to build:

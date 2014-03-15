@@ -3,7 +3,7 @@
 
 #include "miner.h"
 
-#ifdef USE_SKEIN
+#ifdef USE_HEAVY
 extern bool heavy_prepare_work(struct thr_info *thr, struct work *work);
 extern void heavy_regenhash(struct work *work);
 #else

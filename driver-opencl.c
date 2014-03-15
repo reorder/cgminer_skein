@@ -42,6 +42,10 @@
 #include "skein.h"
 #endif
 
+#ifdef USE_HEAVY
+#include "heavy.h"
+#endif
+
 /* TODO: cleanup externals ********************/
 
 #ifdef HAVE_CURSES
@@ -250,6 +254,11 @@ static enum cl_kernels select_kernel(char *arg)
     if (!strcmp(arg, "skein"))
         return KL_SKEIN;
 #endif
+#ifdef USE_HEAVY
+    if (!strcmp(arg, "heavy"))
+        return KL_HEAVY;
+#endif
+
 	return KL_NONE;
 }
 
@@ -265,6 +274,8 @@ char *set_kernel(char *arg)
         return "Cannot specify a kernel with keccak";
     if (opt_skein)
         return "Cannot specify a kernel with skein";
+    if (opt_heavy)
+        return "Cannot specify a kernel with heavy";
 
 	nextptr = strtok(arg, ",");
 	if (nextptr == NULL)
@@ -1355,6 +1366,26 @@ static cl_int queue_skein_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_un
 }
 #endif
 
+#ifdef USE_HEAVY
+static cl_int queue_heavy_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_unused cl_uint threads)
+{
+        cl_kernel *kernel = &clState->kernel;
+        unsigned int num = 0;
+        cl_int status = 0;
+
+        status = clEnqueueWriteBuffer(clState->commandQueue,
+                clState->heavy_CLbuffer, true, 0,
+                HEAVY_BUFFER_SIZE, &blk->heavy_data[0],
+                0, NULL,NULL);
+
+        CL_SET_ARG(clState->heavy_CLbuffer);
+        CL_SET_ARG(clState->outputBuffer);
+
+        return status;
+}
+#endif
+
+
 static void set_threads_hashes(unsigned int vectors, unsigned int compute_shaders, int64_t *hashes, size_t *globalThreads,
 			       unsigned int minthreads, __maybe_unused int *intensity, __maybe_unused int *xintensity, __maybe_unused int *rawintensity)
 {
@@ -1672,6 +1703,12 @@ static bool opencl_thread_prepare(struct thr_info *thr)
                 break;
 #endif
 
+#ifdef USE_HEAVY
+            case KL_HEAVY:
+                cgpu->kname = "heavy";
+                break;
+#endif
+
 			case KL_POCLBM:
 				cgpu->kname = "poclbm";
 				break;
@@ -1729,6 +1766,11 @@ static bool opencl_thread_init(struct thr_info *thr)
             thrdata->queue_kernel_parameters = &queue_skein_kernel;
             break;
 #endif
+#ifdef USE_HEAVY
+        case KL_HEAVY:
+            thrdata->queue_kernel_parameters = &queue_heavy_kernel;
+            break;
+#endif
 		default:
 		case KL_DIABLO:
 			thrdata->queue_kernel_parameters = &queue_diablo_kernel;
@@ -1773,6 +1815,11 @@ static bool opencl_prepare_work(struct thr_info __maybe_unused *thr, struct work
 #ifdef USE_SKEIN
     if (opt_skein)
         skein_prepare_work(thr, work);
+    else
+#endif
+#ifdef USE_HEAVY
+    if (opt_heavy)
+        heavy_prepare_work(thr, work);
     else
 #endif
 		precalc_hash(&work->blk, (uint32_t *)(work->midstate), (uint32_t *)(work->data + 64));

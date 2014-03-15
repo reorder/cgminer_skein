@@ -194,6 +194,7 @@ AC_ARG_ENABLE([adl],
 scrypt="no"
 keccak="no"
 skein="no"
+heavy="no"
 
 if test "$found_opencl" = 1; then
 	if test "x$adl" != xno; then
@@ -233,6 +234,13 @@ if test "$found_opencl" = 1; then
     if test "x$skein" = xyes; then
         AC_DEFINE([USE_SKEIN], [1], [Defined to 1 if skein support is wanted])
     fi
+    AC_ARG_ENABLE([heavy],
+        [AC_HELP_STRING([--enable-heavy],[Compile support for heavycoin mining (default disabled)])],
+        [heavy=$enableval]
+        )
+    if test "x$heavy" = xyes; then
+        AC_DEFINE([USE_HEAVY], [1], [Defined to 1 if heavy support is wanted])
+    fi
 else
 	DLOPEN_FLAGS=""
 fi
@@ -240,6 +248,7 @@ fi
 AM_CONDITIONAL([HAS_SCRYPT], [test x$scrypt = xyes])
 AM_CONDITIONAL([HAS_KECCAK], [test x$keccak = xyes])
 AM_CONDITIONAL([HAS_SKEIN], [test x$skein = xyes])
+AM_CONDITIONAL([HAS_HEAVY], [test x$heavy = xyes])
 
 avalon="no"
 
@@ -503,6 +512,7 @@ AC_DEFINE_UNQUOTED([DIABLO_KERNNAME], ["diablo130302"], [Filename for diablo ker
 AC_DEFINE_UNQUOTED([SCRYPT_KERNNAME], ["scrypt130511"], [Filename for scrypt kernel])
 AC_DEFINE_UNQUOTED([KECCAK_KERNNAME], ["keccak130718"], [Filename for keccak kernel])
 AC_DEFINE_UNQUOTED([SKEIN_KERNNAME], ["skein"], [Filename for skein kernel])
+AC_DEFINE_UNQUOTED([HEAVY_KERNNAME], ["heavy140312"], [Filename for heavy kernel])
 
 
 AC_SUBST(OPENCL_LIBS)
@@ -569,6 +579,12 @@ if test "x$opencl" != xno; then
         echo "  skein................: Disabled"
     fi
 
+    if test "x$heavy" != xno; then
+        echo "  heavy................: Enabled"
+    else
+        echo "  heavy................: Disabled"
+    fi
+
 	else
 		echo "  OpenCL...............: NOT FOUND. GPU mining support DISABLED"
 		if test "x$avalon$bitforce$bitfury$icarus$modminer$bflsc$hashfast$klondike$knc" = xnonononononononono; then
@@ -577,6 +593,7 @@ if test "x$opencl" != xno; then
 		echo "  scrypt...............: Disabled (needs OpenCL)"
 		echo "  keccak...............: Disabled (needs OpenCL)"
 		echo "  skein................: Disabled (needs OpenCL)"
+		echo "  heavy................: Disabled (needs OpenCL)"
 	fi
 else
 	echo "  OpenCL...............: Detection overrided. GPU mining support DISABLED"
@@ -586,6 +603,7 @@ else
 	echo "  scrypt...............: Disabled (needs OpenCL)"
 	echo "  keccak...............: Disabled (needs OpenCL)"
 	echo "  skein................: Disabled (needs OpenCL)"
+	echo "  heavy................: Disabled (needs OpenCL)"
 fi
 
 if test "x$adl" != xno; then

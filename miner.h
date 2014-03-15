@@ -46,6 +46,9 @@ extern char *curly;
 #ifdef USE_KECCAK
 #define KECCAK_BUFFER_SIZE (20*4)
 #endif
+#ifdef USE_HEAVY
+#define HEAVY_BUFFER_SIZE (21*4)
+#endif
 #ifdef STDC_HEADERS
 # include <stdlib.h>
 # include <stddef.h>
@@ -195,6 +198,18 @@ static inline int fsync (int fd)
 #  define htobe64(x) (x)
 #else
 #error UNKNOWN BYTE ORDER
+#endif
+#endif
+
+#ifdef USE_HEAVY
+#ifndef be16toh
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define be16toh(x) bswap_16(x)
+#elif __BYTE_ORDER == __BIG_ENDIAN
+#define be16toh(x) (x)
+#else
+#error UNKNOWN BYTE ORDER
+#endif
 #endif
 #endif
 
@@ -411,6 +426,7 @@ enum cl_kernels {
 	KL_SCRYPT,
     KL_KECCAK,
     KL_SKEIN,
+    KL_HEAVY,
 };
 
 enum dev_reason {
@@ -1205,6 +1221,13 @@ extern bool opt_skein;
 #else
 #define opt_skein (0)
 #endif
+#ifdef USE_HEAVY
+extern bool opt_heavy;
+extern char opt_vote[2];
+#else
+#define opt_heavy (0)
+#define opt_vote ("\x02\x00")
+#endif
 extern double total_secs;
 extern int mining_threads;
 extern int total_devices;
@@ -1267,6 +1290,9 @@ typedef struct {
     cl_ulong skein_midstate[8];
     cl_uint skein_data[3];
 #endif
+#ifdef USE_HEAVY
+    unsigned char heavy_data[HEAVY_BUFFER_SIZE];
+#endif
 } dev_blk_ctx;
 #else
 typedef struct {
@@ -1296,6 +1322,9 @@ struct stratum_work {
 	char *nbit;
 	char *ntime;
 	bool clean;
+#ifdef USE_HEAVY
+    char *reward;
+#endif
 
 	size_t cb_len;
 	size_t header_len;
@@ -1428,6 +1457,9 @@ struct pool {
 	unsigned char *coinbase;
 	int nonce2_offset;
 	unsigned char header_bin[128];
+#ifdef USE_HEAVY
+    unsigned char reward_bin[2];
+#endif
 	int merkle_offset;
 
 	struct timeval tv_lastwork;

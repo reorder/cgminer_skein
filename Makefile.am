@@ -65,6 +65,10 @@ if HAS_SKEIN
 cgminer_SOURCES += skein.c skein.h
 endif
 
+if HAS_HEAVY
+cgminer_SOURCES += heavy.c heavy.h sph_blake.c sph_blake.h sph_groestl.c sph_groestl.h hefty1.c hefty1.h sph_keccak.c sph_keccak.h 
+endif
+
 endif
 
 if NEED_FPGAUTILS

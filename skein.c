@@ -218,7 +218,7 @@ void skein_regenhash(struct work *work)
     uint32_t be_data[20];
     unsigned char hash1[64];
     flip80(be_data, work->data);
-    skein(hash1, be_data, 80);
+    skein(hash1, (const unsigned char *)be_data, 80);
     sha256(hash1, 64, work->hash);
 }
 
@@ -226,7 +226,7 @@ bool skein_prepare_work(struct thr_info __maybe_unused *thr, struct work *work)
 {
     uint32_t be_data[20];
     flip80(be_data, work->data);
-    skeinmid(work->blk.skein_midstate, be_data);
+    skeinmid((unsigned char *)work->blk.skein_midstate, (const unsigned char *)be_data);
     memcpy(work->blk.skein_data, be_data + 16, 12);
     return true;
 }

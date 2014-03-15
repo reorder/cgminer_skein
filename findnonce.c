@@ -200,7 +200,7 @@ static void *postcalc_hash(void *userdata)
 
 	for (entry = 0; entry < pcd->res[found]; entry++) {
 		uint32_t nonce = pcd->res[entry];
-        if (opt_keccak) {
+        if (opt_keccak || opt_heavy) {
             nonce = swab32(nonce);
         }
 

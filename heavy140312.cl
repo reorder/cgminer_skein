@@ -1600,7 +1600,7 @@ inline uint8 hefty84(const uint* msg)
 }
 
 
-#define RESULT_MASK 0xF0000000U
+#define RESULT_MASK 0xFC000000U
 
 //__attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void search(__global const uint*restrict msg, __global uint*restrict output)

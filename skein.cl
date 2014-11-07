@@ -223,10 +223,7 @@ inline uint sha256_res(uint16 data)
 #if 1
 #define rolhackl(n) \
 inline ulong rol ## n  (ulong l) \
-{ \
-    uint2 t = rotate(as_uint2(l), (n)); \
-    return as_ulong((uint2)(bitselect(t.s0, t.s1, (uint)(1 << (n)) - 1), bitselect(t.s0, t.s1, (uint)(~((1 << (n)) - 1))))); \
-}
+    { uint2 x = as_uint2(l); return as_ulong((uint2)((x.x<<n)^(x.y>>(32-n)),(x.y<<n)^(x.x>>(32-n)))); }
 
 rolhackl(8)
 rolhackl(9)
@@ -244,10 +241,7 @@ rolhackl(30)
 
 #define rolhackr(n) \
 inline ulong rol ## n  (ulong l) \
-{ \
-    uint2 t = rotate(as_uint2(l), (n - 32)); \
-    return as_ulong((uint2)(bitselect(t.s1, t.s0, (uint)(1 << (n - 32)) - 1), bitselect(t.s1, t.s0, (uint)(~((1 << (n - 32)) - 1))))); \
-}
+    { uint2 x = as_uint2(l); return as_ulong((uint2)((x.y<<n)^(x.x>>(32-n)),(x.x<<n)^(x.y>>(32-n)))); }
 
 rolhackr(33)
 rolhackr(34)
